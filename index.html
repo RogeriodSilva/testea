@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div class="container">
+    <!-- Área de origem -->
+    <div id="source-list" class="drop-zone">
+        <div class="draggable-item" data-id="1">Elemento 1</div>
+        <div class="draggable-item" data-id="2">Elemento 2</div>
+    </div>
+
+    <!-- Área de destino (Região) -->
+    <div id="target-region" class="drop-zone">
+        <h3>Região 1</h3>
+    </div>
+</div>
+
+<script src="https://jsdelivr.net"></script>
+<script>
+    // Inicializa a lista de origem
+    new Sortable(document.getElementById('source-list'), {
+        group: 'shared',
+        animation: 150
+    });
+
+    // Inicializa a região de destino
+    new Sortable(document.getElementById('target-region'), {
+        group: 'shared',
+        animation: 150,
+        onAdd: function (evt) {
+            // Evento disparado quando um item é solto nesta região
+            const itemEl = evt.item; // Elemento arrastado
+            const targetRegion = evt.to; // Região destino
+            const itemId = itemEl.getAttribute('data-id');
+
+            console.log(`Item ${itemId} adicionado à região.`);
+            // Chame a função para salvar no Laravel (ex: via Axios)
+            salvarAgrupamento(itemId, targetRegion.id);
+        }
+    });
+</script>
+</body>
+</html>
