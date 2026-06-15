@@ -1,47 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-</head>
-<body>
-    <div class="container">
-    <!-- Área de origem -->
-    <div id="source-list" class="drop-zone">
-        <div class="draggable-item" data-id="1">Elemento 1</div>
-        <div class="draggable-item" data-id="2">Elemento 2</div>
-    </div>
 
-    <!-- Área de destino (Região) -->
-    <div id="target-region" class="drop-zone">
-        <h3>Região 1</h3>
-    </div>
-</div>
-
-<script src="https://jsdelivr.net"></script>
-<script>
-    // Inicializa a lista de origem
-    new Sortable(document.getElementById('source-list'), {
-        group: 'shared',
-        animation: 150
-    });
-
-    // Inicializa a região de destino
-    new Sortable(document.getElementById('target-region'), {
-        group: 'shared',
-        animation: 150,
-        onAdd: function (evt) {
-            // Evento disparado quando um item é solto nesta região
-            const itemEl = evt.item; // Elemento arrastado
-            const targetRegion = evt.to; // Região destino
-            const itemId = itemEl.getAttribute('data-id');
-
-            console.log(`Item ${itemId} adicionado à região.`);
-            // Chame a função para salvar no Laravel (ex: via Axios)
-            salvarAgrupamento(itemId, targetRegion.id);
+    <style>
+        .quadro {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
         }
-    });
-</script>
+
+        .coluna {
+            background: #f4f5f7;
+            width: 250px;
+            padding: 15px;
+            border-radius: 8px;
+            min-height: 400px;
+        }
+
+        .cartao {
+            background: white;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            cursor: grab;
+        }
+
+        .cartao.arrastando {
+            opacity: 0.5;
+        }
+
+        .coluna-hover {
+            background: #e3e4e8;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="quadro">
+        <div class="coluna" id="coluna-1">
+            <h2>A Fazer</h2>
+            <div class="cartao" draggable="true" id="card-1">Tarefa 1</div>
+            <div class="cartao" draggable="true" id="card-2">Tarefa 2</div>
+        </div>
+        <div class="coluna" id="coluna-2">
+            <h2>Concluído</h2>
+        </div>
+    </div>
+
+    <script>
+        const cartoes = document.querySelectorAll('.cartao');
+        const colunas = document.querySelectorAll('.coluna');
+
+        // 1. Quando o usuário começa a arrastar um cartão
+        cartoes.forEach(cartao => {
+            cartao.addEventListener('dragstart', (e) => {
+                cartao.classList.add('arrastando');
+                e.dataTransfer.setData('text/plain', cartao.id);
+            });
+
+            cartao.addEventListener('dragend', () => {
+                cartao.classList.remove('arrastando');
+            });
+        });
+
+        // 2. Permite que as colunas recebam o cartão (Drop Targets)
+        colunas.forEach(coluna => {
+            coluna.addEventListener('dragover', (e) => {
+                e.preventDefault(); // Necessário para permitir o drop
+            });
+
+            coluna.addEventListener('dragenter', (e) => {
+                e.preventDefault();
+                coluna.classList.add('coluna-hover');
+            });
+
+            coluna.addEventListener('dragleave', () => {
+                coluna.classList.remove('coluna-hover');
+            });
+
+            coluna.addEventListener('drop', (e) => {
+                e.preventDefault();
+                coluna.classList.remove('coluna-hover');
+
+                // Pega o ID do cartão que está sendo arrastado
+                const cartaoId = e.dataTransfer.getData('text/plain');
+                const cartaoArrastando = document.getElementById(cartaoId);
+
+                // Adiciona o cartão na coluna solta
+                coluna.appendChild(cartaoArrastando);
+            });
+        });
+
+    </script>
 </body>
+
 </html>
